@@ -17,11 +17,11 @@ The objective of this project is to build an isolated, secure, and reproducible 
 * **Hypervisor Platform:** Oracle VM VirtualBox (v7.x)
 * **Guest Machine:** Kali Linux (`kali-linux-2026.3-virtualbox-amd64`)
 * **Network Mode:** Dedicated `NATNetwork`
-* **Subnet:** `10.0.0.0/24`
-* **Assigned Kali IP:** `10.0.0.2`
+* **Subnet:** `10.0.0.0/24`[cite: 8]
+* **Assigned Kali IP:** `10.0.0.2`[cite: 8]
 * **Gateway & DNS:** `10.0.0.1`
-* **Host Integration:** Bidirectional Clipboard & Drag-and-Drop enabled
-* **Shared Folder:** Host `/downloads` directory mounted
+* **Host Integration:** Bidirectional Clipboard & Drag-and-Drop enabled[cite: 8]
+* **Shared Folder:** Host `/downloads` directory mounted[cite: 8]
 
 +-------------------------------------------------------------+
 |               Host Operating System (Windows)               |
@@ -46,7 +46,7 @@ The objective of this project is to build an isolated, secure, and reproducible 
 ## 🛠️ Step-by-Step Lab Execution
 
 ### Step 1: Base Virtualization & Kali Linux Initialization
-1. Installed and initialized Oracle VM VirtualBox.
+1. Installed and initialized Oracle VM VirtualBox[cite: 8].
 2. Imported the `kali-linux-2026.3-virtualbox-amd64` appliance.
 3. Configured base system resources (CPU cores, RAM allocation, and video memory).
 4. Booted into the desktop environment to verify system integrity.
@@ -56,18 +56,23 @@ The objective of this project is to build an isolated, secure, and reproducible 
 ---
 
 ### Step 2: Shared Clipboard, Drag-and-Drop & Shared Folders
-1. Under **Settings -> General -> Advanced**:
-   - Set **Shared Clipboard** to **Bidirectional**.
-   - Set **Drag'n'Drop** to **Bidirectional**.
+1. Under the VM menu bar (**Devices -> Shared Clipboard** and **Devices -> Drag and Drop**):
+   - Configured **Shared Clipboard** to **Bidirectional** and enabled clipboard file transfers[cite: 8, 23].
+   - Configured **Drag and Drop** to **Bidirectional**[cite: 8, 24].
+
+![Shared Clipboard Configuration](clipboard%20screnshot.png)
+
+![Drag and Drop Configuration](drag%20and%20drop%20screenshot.png)
+
 2. Under **Settings -> Shared Folders**:
-   - Mapped the host machine's `/downloads` directory with auto-mount enabled for transferring security tools and lab documentation.
+   - Mapped the host machine's `/downloads` directory with auto-mount enabled for transferring security tools and lab documentation[cite: 8].
 
 ---
 
 ### Step 3: Dedicated NAT Network Creation
 1. Opened VirtualBox **Tools -> Network Manager -> NAT Networks**.
 2. Created a new NAT Network named **`NatNetwork`**.
-3. Configured the IPv4 prefix to **`10.0.0.0/24`**.
+3. Configured the IPv4 prefix to **`10.0.0.0/24`**[cite: 8].
 4. Checked **Enable DHCP**.
 
 ![VirtualBox NAT Network Configuration](network%20settings%20screenshot.png)
@@ -78,8 +83,8 @@ The objective of this project is to build an isolated, secure, and reproducible 
 1. Attached the Kali Linux network adapter to **`NatNetwork`** under VM Network settings.
 2. Inside Kali Linux, configured the **Wired connection 1** settings via NetworkManager GUI:
    - **Method:** `Manual`
-   - **Address:** `10.0.0.2`
-   - **Netmask:** `24`
+   - **Address:** `10.0.0.2`[cite: 8]
+   - **Netmask:** `24`[cite: 8]
    - **Gateway:** `10.0.0.1`
    - **DNS Server:** `10.0.0.1`
 
@@ -106,7 +111,7 @@ sudo nmcli connection up "Wired connection 1"
 [cite: 9]
 
 Verification:
-Outbound reachability and DNS resolution were verified successfully:
+Outbound reachability and DNS resolution were verified successfully[cite: 8]:
 
 Bash
 ping -c 4 8.8.8.8
@@ -121,6 +126,6 @@ Purpose: Provides a rapid rollback state in case future exploits, scripts, or mi
 👨‍🏫 Acknowledgments & Mentorship
 Special thanks to:
 
-Sir Waqas Karim (CCIE) for the expert guidance, hands-on labs, and technical support.
+Sir Waqas Karim (CCIE) for the expert guidance, hands-on labs, and technical support[cite: 3].
 
-Networkwalks IT Solutions & Training for the structured cybersecurity training program.
+Networkwalks IT Solutions & Training for the structured cybersecurity training program[cite: 1].
