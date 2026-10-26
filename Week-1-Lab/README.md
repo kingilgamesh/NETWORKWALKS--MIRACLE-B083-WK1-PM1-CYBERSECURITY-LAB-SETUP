@@ -51,7 +51,7 @@ The objective of this project is to build an isolated, secure, and reproducible 
 3. Configured base system resources (CPU cores, RAM allocation, and video memory).
 4. Booted into the desktop environment to verify system integrity.
 
-![Kali Linux Desktop Environment](Kali%20linux.jpg)
+![Kali Linux Desktop Environment](Kali%20linux.png)
 
 ---
 
@@ -83,7 +83,7 @@ The objective of this project is to build an isolated, secure, and reproducible 
    - **Gateway:** `10.0.0.1`
    - **DNS Server:** `10.0.0.1`
 
-![Kali Linux IPv4 Manual Configuration](network%20setting%202.jpg)
+![Kali Linux IPv4 Manual Configuration](network%20setting%202.png)
 
 ---
 
@@ -92,7 +92,7 @@ The objective of this project is to build an isolated, secure, and reproducible 
 During the setup on VirtualBox v7 with modern Kali rolling releases, outbound Internet traffic stalled due to IPv4 Duplicate Address Detection (DAD) timeouts within NetworkManager.
 
 ### Resolution Steps:
-The issue was resolved by executing the following commands in the Kali Linux terminal:
+The issue was resolved by executing the following commands in the Kali Linux terminal[cite: 9]:
 
 ```bash
 # 1. Disable IPv4 DAD timeout on the active wired profile
@@ -103,6 +103,8 @@ sudo nmcli connection down "Wired connection 1"
 
 # 3. Bring the interface back online
 sudo nmcli connection up "Wired connection 1"
+[cite: 9]
+
 Verification:
 Outbound reachability and DNS resolution were verified successfully:
 
@@ -122,12 +124,3 @@ Special thanks to:
 Sir Waqas Karim (CCIE) for the expert guidance, hands-on labs, and technical support.
 
 Networkwalks IT Solutions & Training for the structured cybersecurity training program.
-
-
----
-
-### Checklist Before Final Submission:
-1. **Repository Name:** Matches `NETWORKWALKS-[YOUR_NAME]-B082-WK1-PM1-CYBERSECURITY-LAB-SETUP`[cite: 14].
-2. **File Name:** Named `README.md` in the root folder[cite: 14].
-3. **Images:** The 4 screenshot files are committed and visible on the page[cite: 10, 11, 12, 13, 14].
-4. **Visibility:** Ensure the GitHub repository is set to **Public** so your instructors can
