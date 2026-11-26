@@ -1,125 +1,127 @@
-# 🛡️ Penetration Testing Report: Web Application & Database Vulnerability Assessment
-**W3-PM-FINAL | Cybersecurity Internship | Networkwalks**
+# 🛡️ Mediroza General Hospital — Web Application Penetration Test
+**Networkwalks | Batch B083 | Week 4 Engagement (`W4-PM-FINAL`)**
 
-| Field | Details |
+| Item | Detail |
 | :--- | :--- |
-| **Pentester Name** | Miracle Orifa (Cybersecurity Professional) |
-| **Program / Batch** | B083 – Networkwalks |
-| **Date** | 26 November 2026 |
-| **Module / Scope** | Web Application Reconnaissance, Enumeration & Exploitation (`medirozahospital.com`) |
-| **Client / Target** | `medirozahospital.com` (`199.188.201.16`) – Authorized Lab Environment |
-| **Permission Secured?** | Yes |
-| **Phases Covered** | Phase 1: Reconnaissance & Footprinting<br>Phase 2: Scanning & Enumeration<br>Phase 3: Vulnerability Assessment & Exploitation |
+| **Engagement** | Networkwalks, Batch B083, Week 4 |
+| **Assessment Type** | Black-box penetration test |
+| **Duration** | Five days (`22/11/2026` – `26/11/2026`) |
+| **Target** | `https://medirozahospital.com` (`199.188.201.16`) |
+| **Prepared By** | Orifa Miracle Oyimafu |
+| **Report Version** | 1.0 (26 November 2026) |
+| **Classification** | Confidential — Authorised personnel only |
 
 ---
 
-## 1. Liability Disclaimer
-I have performed these activities only on the systems and devices where I had secured written permission or the authorized lab environments provided for my training. All materials in this repository are for educational and research purposes only. Do not use anything from here to break the law. The instructor, the authors, and Networkwalks are not responsible for what you do with this knowledge. Every action you take is your own responsibility.
+## 1. Executive Summary & Scope
+An authorised black-box security assessment was conducted against **`https://medirozahospital.com`** (`199.188.201.16`) within the strict boundaries of the engagement brief (no social engineering, no denial-of-service testing, and no out-of-scope host exploitation).
+
+Reconnaissance and directory discovery uncovered critical exposure risks across the application:
+* **Overall Risk Rating:** **Critical**
+* **Key Findings:** A publicly accessible SQL database backup (`/old/mediroza_db_backup_2019.sql`) containing employee HR records and shareholder tables, unauthenticated access to patient laboratory reports protected by weak PDF passwords, login username enumeration, and open directory listings across `/old/`, `/staff/`, and `/patient/`.
 
 ---
 
-## 2. Executive Summary & Scope
-During Week 3 of my Cybersecurity internship at **Networkwalks**, I conducted an authorized black-box security assessment against the target web application **`medirozahospital.com`** (`199.188.201.16`). The engagement progressed from passive domain reconnaissance and active port scanning to directory brute-forcing, sensitive file discovery, database dump inspection, authentication enumeration, and encrypted document recovery.
-
----
-
-## 3. Commands Executed
+## 2. Commands Executed
 
 ```bash
 # 1. Domain Registration & WHOIS Footprinting
 whois medirozahospital.com
 
-# 2. ICMP Connectivity Check & SYN Stealth Port Scan (Top 1000 Ports)
+# 2. ICMP Connectivity Check & TCP SYN Stealth Scan (Top 1000 Ports)
 ping -c 25 medirozahospital.com
 nmap 199.188.201.16 -vvv
 
-# 3. Directory & File Brute-Force Enumeration
-gobuster dir -u https://medirozahospital.com -w /usr/share/wordlists/dirb/common.txt -x php,html,txt,pdf,zip,bak
+# 3. Web Directory & File Extension Enumeration
+gobuster dir -u [https://medirozahospital.com](https://medirozahospital.com) -w /usr/share/wordlists/dirb/common.txt -x php,html,txt,pdf,zip,bak
 
-# 4. Inspecting Exposed Paths & Backup Files via Curl / Browser
-curl -I https://medirozahospital.com/robots.txt
-curl -O https://medirozahospital.com/old/mediroza_db_backup_2019.sql
+# 4. Inspecting robots.txt & Exposed Database Backup
+curl -I [https://medirozahospital.com/robots.txt](https://medirozahospital.com/robots.txt)
+curl -O [https://medirozahospital.com/old/mediroza_db_backup_2019.sql](https://medirozahospital.com/old/mediroza_db_backup_2019.sql)
 ```
 
 ---
 
-## 4. Key Findings & Exploitation Chain
+## 3. Findings Summary
 
-### 4.1 Reconnaissance & Port Scanning
-* **WHOIS Lookup:** Confirmed domain registration through `NAMECHEAP INC` (created `2026-08-14`, expiring `2027-08-14`), hosted on Namecheap name servers (`dns1.namecheaphosting.com`, `dns2.namecheaphosting.com`) with privacy protection enabled.
-* **Nmap Scan (`nmap 199.188.201.16 -vvv`):** Identified target host `server274-1.web-hosting.com` (`199.188.201.16`) as live with **12 open TCP ports**: `21` (FTP), `26` (RSFTP), `53` (DNS), `80` (HTTP), `110` (POP3), `143` (IMAP), `443` (HTTPS), `465` (SMTPS), `587` (Submission), `993` (IMAPS), `995` (POP3S), and `20/tcp` closed.
-
-### 4.2 Directory Enumeration & `robots.txt` Disclosure
-* **Gobuster Enumeration:** Discovered `200 OK` and `301 Redirect` paths including `/about.html`, `/contact.html`, `/index.html`, `/wp-admin`, `/wp-login.php`, `/old/`, `/staff/`, `/patient/`, `/bandwidth/`, and `/mailman/`.
-* **`robots.txt` Misconfiguration:** Inspecting `[https://medirozahospital.com/robots.txt](https://medirozahospital.com/robots.txt)` explicitly revealed restricted directories (`Disallow: /patient/`, `Disallow: /staff/`, `Disallow: /old/`) to any external visitor.
-
-### 4.3 Critical Exposure: Unprotected SQL Database Backup & Directory Listing
-* **Open Directory Indexing:** Navigating to `/old/`, `/staff/`, and `/patient/` revealed full directory listings enabled on LiteSpeed Web Server.
-* **Full Database Dump (`mediroza_db_backup_2019.sql`):** Inside `/old/`, an unauthenticated backup file (`mediroza_db_backup_2019.sql`) was publicly downloadable. Inspecting the SQL dump exposed:
-  * **30 Hospital Staff Records (`staff` table):** Full names, job titles, departments, email addresses, phone numbers, South African National ID numbers, monthly salaries (ZAR), and hire dates.
-  * **10 Shareholder Records (`shareholders` table):** Shareholder names, ownership percentages, shares held, and share classes.
-
-### 4.4 Patient Portal Access, Username Enumeration & PDF Cracking
-* **Username Enumeration (`patient/login.php`):** Testing login inputs revealed distinct error messages—returning *"Incorrect password"* for valid usernames (e.g., `admin`) versus *"Username not found"* for invalid ones (e.g., `Naledi`)—allowing attackers to enumerate valid accounts.
-* **Unauthenticated Lab Reports & Password Cracking:** Accessing `/patient/portal.php` exposed three confidential Pathology Laboratory Reports (`patient_report_1.pdf`, `patient_report_2.pdf`, `patient_report_3.pdf`) protected with weak PDF passwords. Using dictionary/hash recovery tools (`Networkwalks Password Cracker` and `OnlineHashCrack`), all three PDF hashes (`$pdf$2*3*128...`) were cracked: 1. **Report 1 (`LR-2024-1187` – Sipho Dlamini):** Cracked password **`123456`** 2. **Report 2 (`LR-2024-1192` – Priya Reddy):** Cracked password **`password`** 3. **Report 3 (`LR-2024-1205` – Emily Thompson):** Cracked password **`!@#$%^&`**
+| ID | Finding | Severity | Evidence Status |
+| :--- | :--- | :--- | :--- |
+| **F-01** | Publicly accessible database backup containing employee & shareholder data (`/old/mediroza_db_backup_2019.sql`) | **Critical** | Confirmed by directory listing & SQL dump screenshots |
+| **F-02** | Unauthenticated portal access & weak password protection on patient laboratory PDFs | **High** | Confirmed by portal, password recovery & unlocked PDF screenshots |
+| **F-03** | Login responses enable username enumeration (`/patient/login.php`) | **Medium** | Confirmed by contrasting login error response screenshots |
+| **F-04** | Directory listings and `robots.txt` disclose sensitive application paths (`/old/`, `/staff/`, `/patient/`) | **Low** | Confirmed; directly facilitated discovery of F-01 and F-02 |
+| **OBS-01** | Multiple network services exposed on resolved hosting IP (`199.188.201.16`) | **Informational** | 12 open TCP ports identified; no service exploitation performed |
 
 ---
 
-## 5. Risk Summary & Recommendations
+## 4. Technical Walkthrough & Remediation
 
-| # | Vulnerability / Finding | Severity | Remediation |
-| :--- | :--- | :--- | :--- |
-| 1 | Publicly accessible SQL database backup (`/old/mediroza_db_backup_2019.sql`) | **Critical** | Remove all `.sql`, `.bak`, and legacy backup files from public web roots immediately. |
-| 2 | Unauthenticated access to Patient Portal & PII/PHI lab reports | **Critical** | Enforce strict server-side session authentication checks on `portal.php` and `download.php`. |
-| 3 | Directory listing enabled across `/old/`, `/staff/`, and `/patient/` | **High** | Disable directory indexing (`Options -Indexes` in `.htaccess` or LiteSpeed vhost config). |
-| 4 | Weak passwords protecting confidential PDF medical records | **High** | Enforce strong, randomly generated passwords or authenticated portal delivery rather than static weak passwords. |
-| 5 | Username enumeration on `patient/login.php` | **Medium** | Standardize authentication error responses to a generic *"Invalid username or password"* message. |
-| 6 | Sensitive paths listed in `robots.txt` | **Low** | Rely on proper access controls rather than `robots.txt` to hide sensitive directories. |
+### F-01: Exposed SQL Database Backup (`Critical`)
+* **Observation:** Browsing to `/old/` revealed directory indexing enabled on LiteSpeed Web Server and an exposed 7 KB backup (`mediroza_db_backup_2019.sql`) from the `mediroza_hr` database containing 30 employee records (`staff` table: names, job titles, departments, emails, phone numbers, national IDs, ZAR salaries, hire dates) and 10 `shareholders` table records.
+* **Remediation:** Immediately remove all `.sql` and `.bak` files from public web directories, audit access logs, rotate exposed credentials, and store backups in encrypted, non-public storage.
+
+### F-02: Patient Portal Access & Weak PDF Encryption (`High`)
+* **Observation:** Accessing `/patient/portal.php` allowed downloading three encrypted patient pathology reports (`LR-2024-1187`, `LR-2024-1192`, `LR-2024-1205`). Extracting their R3/128-bit hashes (`$pdf$2*3*128...`) and running dictionary recovery cracked all three passwords (`123456`, `password`, and `!@#$%^&`).
+* **Remediation:** Enforce server-side session authentication and patient-level authorization checks on `portal.php` and `download.php`, and replace weak static PDF passwords with authenticated download tokens.
+
+### F-03: Username Enumeration on Login Form (`Medium`)
+* **Observation:** `/patient/login.php` returned *"Incorrect password"* for a valid username (`admin`) versus *"Username not found"* for an unknown username (`Naledi`).
+* **Remediation:** Return a unified generic message (*"Invalid username or password"*) for all failed login attempts and apply rate limiting.
+
+### F-04 & OBS-01: Path Disclosure & Network Services (`Low / Informational`)
+* **Observation:** `robots.txt` disclosed `/patient/`, `/staff/`, and `/old/`, while `/patient/` exposed `error_log` (251 KB). Nmap identified 12 open TCP ports (`21`, `26`, `53`, `80`, `110`, `143`, `443`, `465`, `587`, `993`, `995`, with `20/tcp` closed).
+* **Remediation:** Disable directory indexing (`Options -Indexes`), move logs outside the document root, and disable legacy cleartext protocols (FTP, POP3, IMAP).
+
+---
+
+## 5. Limitations & Operational Notes
+* **Authentication Path:** The exact request/response path leading to `/patient/portal.php` requires code-level verification and is not classified as SQL injection without controlled confirmation.
+* **Data Handling Best Practice:** In future assessments, perform PDF hash extraction and password recovery offline (`pdf2john` + `John the Ripper`/`Hashcat`) rather than uploading sensitive client documents to third-party web tools.
 
 ---
 
 ## 6. Evidences Collected
 
-### 1. WHOIS Domain Reconnaissance
-![WHOIS Lookup](Screenshot%202026-11-24%20141732.jpg)
+### E-01: WHOIS Domain Reconnaissance
+![WHOIS Lookup](Screenshot%202026-11-24%20141732.png)
 
-### 2. Nmap SYN Stealth Scan
-![Nmap Scan](nmap%20scan.jpg)
+### E-02: Nmap SYN Stealth Scan (`199.188.201.16`)
+![Nmap Scan](nmap%20scan.png)
 
-### 3. Gobuster Directory Enumeration (Part 1 & Part 2)
-![Gobuster Part 1](gobuster%201.jpg)
-![Gobuster Part 2](gobuster%202.jpg)
+### E-03: Gobuster Directory Enumeration (Part 1 & Part 2)
+![Gobuster Part 1](gobuster%201.png)
+![Gobuster Part 2](gobuster%202.png)
 
-### 4. Exposed `robots.txt` File
-![Robots.txt](robot%20txt%20.jpg)
+### E-04: Exposed `robots.txt` File
+![Robots.txt](robot%20txt%20.png)
 
-### 5. Open Directory Listings (`/old/`, `/staff/`, `/patient/`)
-![Index of /old/](index%20old.jpg)
-![Index of /staff/](index%20staff.jpg)
-![Index of /patient/](index%20patient.jpg)
+### E-05: Legacy Directory Listing (`/old/`)
+![Index of /old/](index%20old.png)
 
-### 6. Exposed SQL Database Dump (`mediroza_db_backup_2019.sql`)
-![Staff Table Dump](shareholder%20details.jpg)
+### E-06: Exposed SQL Database Dump (`mediroza_db_backup_2019.sql`)
+![Staff Table Dump](shareholder%20details.png)
 ![Shareholders Table Dump](shareholder%202.PNG)
 
-### 7. Login Portal Username Enumeration
+### E-07 & E-08: Staff Directory Listing & Login Username Enumeration
+![Index of /staff/](index%20staff.png)
 ![Valid Username Response](Username%20adm%20.png)
 ![Invalid Username Response](username%20n.png)
 
-### 8. Patient Portal & Extracted Pathology Reports
-![Patient Lab Reports Portal](lab%20report%20file.jpg)
-![Patient Report 1](patient%20report%201.png)
-![Patient Report 2](patient%20report%202%20.png)
-![Patient Report 3](patient%203%20report.png)
+### E-09 & E-10: Patient Directory Listing & Lab Reports Portal
+![Index of /patient/](index%20patient.png)
+![Patient Lab Reports Portal](lab%20report%20file.png)
 
-### 9. PDF Password Cracking Results
-![Report 1 Password Cracked](report%201%20pawd.jpg)
+### E-11 to E-13: PDF Password Recovery & Unlocked Pathology Reports
+![Report 1 Password Cracked](report%201%20pawd.png)
+![Patient Report 1](patient%20report%201.png)
 ![Report 2 Password Cracked](report%202%20pawd.png)
+![Patient Report 2](patient%20report%202%20.png)
 ![Report 3 Password Cracked](report%203%20pawd.png)
+![Patient Report 3](patient%203%20report.png)
 
 ---
 
 ## 👤 Author & Mentorship
-* **Author:** Miracle Orifa (Batch B083)
+* **Prepared By:** Orifa Miracle Oyimafu (Batch B083)
 * **Instructor:** Sir Waqas Karim CCIE | [LinkedIn](https://www.linkedin.com/in/waqaskarim/)
-* **Program:** Cybersecurity Internship at **Networkwalks** | Week 03
+* **Program:** Cybersecurity Internship at **Networkwalks** | Week 04
